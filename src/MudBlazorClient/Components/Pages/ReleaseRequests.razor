@@ -1,0 +1,56 @@
+@page "/release-requests"
+@inject ApiService Api
+@inject IDialogService DialogService
+
+<PageTitle>Release Requests</PageTitle>
+
+<div class="d-flex align-center justify-space-between mb-4">
+    <MudText Typo="Typo.h5">Release Requests</MudText>
+    <MudButton Variant="Variant.Filled" Color="Color.Primary"
+               StartIcon="@Icons.Material.Filled.Add" OnClick="OpenAddDialog">
+        New Request
+    </MudButton>
+</div>
+
+@if (_loading)
+{
+    <MudProgressLinear Indeterminate="true" />
+}
+else
+{
+    <MudTable Items="_requests" Hover="true" Striped="true" Dense="true">
+        <HeaderContent>
+            <MudTh>Release Type</MudTh>
+            <MudTh>Location</MudTh>
+            <MudTh>Release Date</MudTh>
+            <MudTh>Notes</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd>@context.ReleaseTypeName</MudTd>
+            <MudTd>@context.Location</MudTd>
+            <MudTd>@context.ReleaseDate?.ToString("yyyy-MM-dd")</MudTd>
+            <MudTd>@context.Notes</MudTd>
+        </RowTemplate>
+    </MudTable>
+}
+
+@code {
+    private List<ReleaseRequestDto> _requests = [];
+    private bool _loading = true;
+
+    protected override async Task OnInitializedAsync() => await Load();
+
+    private async Task Load()
+    {
+        _loading = true;
+        _requests = await Api.GetReleaseRequestsAsync();
+        _loading = false;
+    }
+
+    private async Task OpenAddDialog()
+    {
+        var dialog = await DialogService.ShowAsync<AddReleaseRequestDialog>("New Release Request");
+        var result = await dialog.Result;
+        if (result is { Canceled: false }) await Load();
+    }
+}

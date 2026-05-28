@@ -1,0 +1,42 @@
+{
+  "name": "SCMApp3 (.NET 10 + Node)",
+  "image": "mcr.microsoft.com/devcontainers/dotnet:1-10.0-bookworm",
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "22"
+    },
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-dotnettools.csharp",
+        "Vue.volar",
+        "esbenp.prettier-vscode",
+        "GitHub.vscode-github-actions",
+        "ms-azuretools.vscode-docker"
+      ]
+    }
+  },
+  "forwardPorts": [5000, 5001, 5173, 18888],
+  "portsAttributes": {
+    "5000": {
+      "label": "Web HTTP"
+    },
+    "5001": {
+      "label": "Web HTTPS"
+    },
+    "5173": {
+      "label": "Vite Dev Server"
+    },
+    "18888": {
+      "label": "Aspire Dashboard"
+    }
+  },
+  "postCreateCommand": "dotnet restore && cd src/Web/ClientApp && npm install",
+  "postStartCommand": "bash .devcontainer/post-start-check.sh",
+  "remoteUser": "vscode",
+  "hostRequirements": {
+    "memory": "8gb"
+  }
+}

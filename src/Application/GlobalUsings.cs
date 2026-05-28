@@ -1,0 +1,11 @@
+global using Ardalis.GuardClauses;
+global using FluentValidation;
+global using MediatR;
+global using Microsoft.EntityFrameworkCore;
+global using SCMApp3.Application.Common.Interfaces;
+global using SCMApp3.Data;
+global using SCMApp3.Domain.Constants;
+global using SCMApp3.Domain.Enums;
+global using SCMApp3.Domain.Services;
+global using NotFoundException = SCMApp3.Application.Common.Exceptions.NotFoundException;
+global using ScmSystem = SCMApp3.Data.System;

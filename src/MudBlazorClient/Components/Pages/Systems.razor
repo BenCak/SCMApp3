@@ -1,0 +1,86 @@
+@page "/systems"
+@inject ApiService Api
+@inject IDialogService DialogService
+
+<PageTitle>Systems</PageTitle>
+
+<MudBreadcrumbs Items="_breadcrumbs" Class="mb-2 pa-0" />
+
+<div class="d-flex align-center justify-space-between mb-4">
+    <MudText Typo="Typo.h5">Systems</MudText>
+    <MudButton Variant="Variant.Filled" Color="Color.Primary"
+               StartIcon="@Icons.Material.Filled.Add" OnClick="OpenAddDialog">
+        Add System
+    </MudButton>
+</div>
+
+@if (_loading)
+{
+    <MudProgressLinear Indeterminate="true" />
+}
+else
+{
+    <MudTable Items="_systems" Hover="true" Striped="true" Dense="true">
+        <HeaderContent>
+            <MudTh>Customer</MudTh>
+            <MudTh>Product</MudTh>
+            <MudTh>POC</MudTh>
+            <MudTh>POC Email</MudTh>
+            <MudTh></MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd>@context.CustomerName</MudTd>
+            <MudTd>@context.ProductName</MudTd>
+            <MudTd>@context.PocName</MudTd>
+            <MudTd>@context.PocEmail</MudTd>
+            <MudTd>
+                <MudButton Variant="Variant.Text" Color="Color.Primary" Size="Size.Small"
+                           Href="@($"/systems/{context.Id}/versions?systemName={Uri.EscapeDataString(context.CustomerName + " / " + context.ProductName)}")">
+                    Versions
+                </MudButton>
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+}
+
+@code {
+    [SupplyParameterFromQuery] public int? CustomerId { get; set; }
+    [SupplyParameterFromQuery] public string? CustomerName { get; set; }
+    [SupplyParameterFromQuery] public int? ProductId { get; set; }
+    [SupplyParameterFromQuery] public string? ProductName { get; set; }
+
+    private List<SystemDto> _systems = [];
+    private bool _loading = true;
+    private List<BreadcrumbItem> _breadcrumbs = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        BuildBreadcrumbs();
+        await Load();
+    }
+
+    private async Task Load()
+    {
+        _loading = true;
+        _systems = await Api.GetSystemsAsync(CustomerId, ProductId);
+        _loading = false;
+    }
+
+    private void BuildBreadcrumbs()
+    {
+        _breadcrumbs = [new BreadcrumbItem("Home", href: "/")];
+        if (CustomerName is not null)
+            _breadcrumbs.Add(new BreadcrumbItem("Customers", href: "/customers"));
+        else if (ProductName is not null)
+            _breadcrumbs.Add(new BreadcrumbItem("Products", href: "/products"));
+        _breadcrumbs.Add(new BreadcrumbItem(
+            CustomerName ?? ProductName ?? "All Systems", href: null, disabled: true));
+    }
+
+    private async Task OpenAddDialog()
+    {
+        var dialog = await DialogService.ShowAsync<AddSystemDialog>("Add System");
+        var result = await dialog.Result;
+        if (result is { Canceled: false }) await Load();
+    }
+}

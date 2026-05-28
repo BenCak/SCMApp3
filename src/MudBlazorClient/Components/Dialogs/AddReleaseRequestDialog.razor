@@ -1,0 +1,66 @@
+@inject ApiService Api
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="_form" @bind-IsValid="_valid">
+            <MudSelect T="int?" @bind-Value="_releaseTypeId" Label="Release Type" Clearable="true">
+                @foreach (var t in _releaseTypes)
+                {
+                    <MudSelectItem T="int?" Value="@((int?)t.Id)">@t.Name</MudSelectItem>
+                }
+            </MudSelect>
+
+            <MudTextField @bind-Value="_location" Label="Location" MaxLength="500" Class="mt-3" />
+
+            <MudDatePicker @bind-Date="_releaseDate" Label="Release Date" Class="mt-3" />
+
+            <MudTextField @bind-Value="_notes" Label="Notes" Lines="3"
+                          MaxLength="2000" Class="mt-3" />
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled"
+                   OnClick="Submit" Disabled="_saving">
+            @if (_saving) { <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" /> }
+            Save
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = null!;
+
+    private MudForm _form = null!;
+    private bool _valid;
+    private bool _saving;
+
+    private List<ReleaseTypeDto> _releaseTypes = [];
+    private int? _releaseTypeId;
+    private string? _location;
+    private DateTime? _releaseDate;
+    private string? _notes;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _releaseTypes = await Api.GetReleaseTypesAsync();
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+
+    private async Task Submit()
+    {
+        await _form.ValidateAsync();
+        if (!_valid) return;
+
+        _saving = true;
+        var ok = await Api.CreateReleaseRequestAsync(_location, _releaseDate, _releaseTypeId, _notes);
+        _saving = false;
+
+        if (ok)
+            MudDialog.Close(DialogResult.Ok(true));
+        else
+            Snackbar.Add("Failed to save release request.", Severity.Error);
+    }
+}
