@@ -86,4 +86,24 @@ public class ApiService(HttpClient http)
         var response = await http.PostAsJsonAsync("api/systems", new { customerId, productId, pocName, pocEmail, pocPhone });
         return response.IsSuccessStatusCode;
     }
+
+    // ── PUT ──────────────────────────────────────────────────────────
+
+    public async Task<bool> UpdateCustomerAsync(int id, string name, string? abbreviation)
+    {
+        var response = await http.PutAsJsonAsync($"api/customers/{id}", new { name, abbreviation });
+        return response.IsSuccessStatusCode;
+    }
+
+    public async Task<bool> UpdateProductAsync(int id, string name, string? description)
+    {
+        var response = await http.PutAsJsonAsync($"api/products/{id}", new { name, description });
+        return response.IsSuccessStatusCode;
+    }
+
+    public async Task<bool> UpdateSystemAsync(int id, int customerId, int productId, string? pocName, string? pocEmail, string? pocPhone)
+    {
+        var response = await http.PutAsJsonAsync($"api/systems/{id}", new { customerId, productId, pocName, pocEmail, pocPhone });
+        return response.IsSuccessStatusCode;
+    }
 }

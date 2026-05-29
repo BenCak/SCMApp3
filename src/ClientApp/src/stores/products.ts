@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import type { ProductDto } from '../types'
-import { getProducts, createProduct } from '../api/products'
+import { getProducts, createProduct, updateProduct } from '../api/products'
 
 export const useProductsStore = defineStore('products', () => {
   const products = ref<ProductDto[]>([])
@@ -25,5 +25,10 @@ export const useProductsStore = defineStore('products', () => {
     await fetchAll()
   }
 
-  return { products, loading, error, fetchAll, create }
+  async function update(id: number, name: string, description?: string) {
+    await updateProduct(id, name, description)
+    await fetchAll()
+  }
+
+  return { products, loading, error, fetchAll, create, update }
 })

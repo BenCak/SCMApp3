@@ -3,7 +3,7 @@
   <PropertyGroup>
     <RootNamespace>SCMApp3.Web</RootNamespace>
     <AssemblyName>SCMApp3.Web</AssemblyName>
-    <SpaRoot>ClientApp/</SpaRoot>
+    <SpaRoot>../ClientApp/</SpaRoot>
     <OpenApiDocumentsDirectory>./wwwroot/openapi/</OpenApiDocumentsDirectory>
     <OpenApiGenerateDocumentsOptions>--file-name v1</OpenApiGenerateDocumentsOptions>
   </PropertyGroup>

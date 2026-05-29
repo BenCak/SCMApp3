@@ -27,3 +27,18 @@ export async function createSystem(payload: {
   const data = await res.json()
   return data.id
 }
+
+export async function updateSystem(id: number, payload: {
+  customerId: number
+  productId: number
+  pocName?: string
+  pocEmail?: string
+  pocPhone?: string
+}): Promise<void> {
+  const res = await fetch(`${BASE}/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  })
+  if (!res.ok) throw new Error(await res.text())
+}

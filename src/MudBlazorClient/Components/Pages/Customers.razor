@@ -28,6 +28,8 @@ else
             <MudTd>@context.Name</MudTd>
             <MudTd>@context.Abbreviation</MudTd>
             <MudTd>
+                <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small"
+                               OnClick="@(() => OpenEditDialog(context))" />
                 <MudButton Variant="Variant.Text" Color="Color.Primary" Size="Size.Small"
                            Href="@($"/systems?customerId={context.Id}&customerName={Uri.EscapeDataString(context.Name)}")">
                     View Systems
@@ -53,6 +55,14 @@ else
     private async Task OpenAddDialog()
     {
         var dialog = await DialogService.ShowAsync<AddCustomerDialog>("Add Customer");
+        var result = await dialog.Result;
+        if (result is { Canceled: false }) await Load();
+    }
+
+    private async Task OpenEditDialog(CustomerDto customer)
+    {
+        var parameters = new DialogParameters { ["Customer"] = customer };
+        var dialog = await DialogService.ShowAsync<EditCustomerDialog>("Edit Customer", parameters);
         var result = await dialog.Result;
         if (result is { Canceled: false }) await Load();
     }

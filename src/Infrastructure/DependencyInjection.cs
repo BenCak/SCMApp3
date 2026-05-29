@@ -13,8 +13,8 @@ public static class DependencyInjection
 {
     public static void AddInfrastructureServices(this IHostApplicationBuilder builder)
     {
-        var connectionString = builder.Configuration.GetConnectionString(SCMApp3.Shared.Services.Database);
-        Guard.Against.Null(connectionString, message: $"Connection string '{SCMApp3.Shared.Services.Database}' not found.");
+        var connectionString = builder.Configuration.GetConnectionString("SCMApp3Db");
+        Guard.Against.Null(connectionString, message: "Connection string 'SCMApp3Db' not found.");
 
         builder.Services.AddScoped<ISaveChangesInterceptor, AuditableEntityInterceptor>();
         builder.Services.AddScoped<ISaveChangesInterceptor, DispatchDomainEventsInterceptor>();

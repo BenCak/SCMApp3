@@ -1,0 +1,56 @@
+@inject ApiService Api
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <DialogContent>
+        <MudForm @ref="_form" @bind-IsValid="_valid">
+            <MudTextField @bind-Value="_name" Label="Name" Required="true"
+                          RequiredError="Name is required" MaxLength="200"
+                          Immediate="true" />
+            <MudTextField @bind-Value="_abbreviation" Label="Abbreviation"
+                          MaxLength="20" Class="mt-3" />
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" Variant="Variant.Filled"
+                   OnClick="Submit" Disabled="_saving">
+            @if (_saving) { <MudProgressCircular Size="Size.Small" Indeterminate="true" Class="mr-2" /> }
+            Save
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] IMudDialogInstance MudDialog { get; set; } = null!;
+    [Parameter] public CustomerDto Customer { get; set; } = null!;
+
+    private MudForm _form = null!;
+    private bool _valid;
+    private bool _saving;
+    private string _name = "";
+    private string? _abbreviation;
+
+    protected override void OnParametersSet()
+    {
+        _name = Customer.Name;
+        _abbreviation = Customer.Abbreviation;
+    }
+
+    private void Cancel() => MudDialog.Cancel();
+
+    private async Task Submit()
+    {
+        await _form.ValidateAsync();
+        if (!_valid) return;
+
+        _saving = true;
+        var ok = await Api.UpdateCustomerAsync(Customer.Id, _name, _abbreviation);
+        _saving = false;
+
+        if (ok)
+            MudDialog.Close(DialogResult.Ok(true));
+        else
+            Snackbar.Add("Failed to update customer.", Severity.Error);
+    }
+}

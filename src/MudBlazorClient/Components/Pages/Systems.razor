@@ -34,6 +34,8 @@ else
             <MudTd>@context.PocName</MudTd>
             <MudTd>@context.PocEmail</MudTd>
             <MudTd>
+                <MudIconButton Icon="@Icons.Material.Filled.Edit" Size="Size.Small"
+                               OnClick="@(() => OpenEditDialog(context))" />
                 <MudButton Variant="Variant.Text" Color="Color.Primary" Size="Size.Small"
                            Href="@($"/systems/{context.Id}/versions?systemName={Uri.EscapeDataString(context.CustomerName + " / " + context.ProductName)}")">
                     Versions
@@ -80,6 +82,14 @@ else
     private async Task OpenAddDialog()
     {
         var dialog = await DialogService.ShowAsync<AddSystemDialog>("Add System");
+        var result = await dialog.Result;
+        if (result is { Canceled: false }) await Load();
+    }
+
+    private async Task OpenEditDialog(SystemDto system)
+    {
+        var parameters = new DialogParameters { ["System"] = system };
+        var dialog = await DialogService.ShowAsync<EditSystemDialog>("Edit System", parameters);
         var result = await dialog.Result;
         if (result is { Canceled: false }) await Load();
     }

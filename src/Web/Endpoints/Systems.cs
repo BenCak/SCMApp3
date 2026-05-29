@@ -1,4 +1,5 @@
 using SCMApp3.Application.Systems.Commands.CreateSystem;
+using SCMApp3.Application.Systems.Commands.UpdateSystem;
 using SCMApp3.Application.Systems.Queries.GetSystems;
 
 namespace SCMApp3.Web.Endpoints;
@@ -18,5 +19,11 @@ public class Systems : IEndpointGroup
             var id = await sender.Send(command);
             return Results.Created($"/api/systems/{id}", new { id });
         }).WithName("CreateSystem");
+
+        group.MapPut("{id:int}", async (int id, UpdateSystemCommand command, ISender sender) =>
+        {
+            await sender.Send(command with { Id = id });
+            return Results.NoContent();
+        }).WithName("UpdateSystem");
     }
 }

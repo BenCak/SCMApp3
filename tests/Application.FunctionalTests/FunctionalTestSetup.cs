@@ -1,4 +1,6 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using SCMApp3.Data;
 
 namespace SCMApp3.Application.FunctionalTests;
 
@@ -9,38 +11,20 @@ public class FunctionalTestSetup
     internal static DatabaseResetter? DbResetter { get; private set; }
 
     private static WebApiFactory? _factory;
-    private static DistributedApplication? _app;
+    private static string? _dbPath;
 
     [OneTimeSetUp]
     public async Task OneTimeSetUp()
     {
-        var cts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
-        var cancellationToken = cts.Token;
-
-        var builder = await DistributedApplicationTestingBuilder
-            .CreateAsync<Projects.TestAppHost>(
-                args: [],
-                configureBuilder: (options, _) =>
-                {
-                    options.DisableDashboard = true;
-                });
-
-        builder.Configuration["ASPIRE_ALLOW_UNSECURED_TRANSPORT"] = "true";
-
-        _app = await builder
-            .BuildAsync(cancellationToken)
-            .WaitAsync(cancellationToken);
-
-        await _app
-            .StartAsync(cancellationToken)
-            .WaitAsync(cancellationToken);
-
-        await _app.ResourceNotifications.WaitForResourceHealthyAsync(
-            Services.Database, cancellationToken);
-
-        var connectionString = (await _app.GetConnectionStringAsync(Services.Database))!;
+        _dbPath = Path.Combine(Path.GetTempPath(), $"scmapp3-test-{Guid.NewGuid()}.db");
+        var connectionString = $"DataSource={_dbPath};Cache=Shared";
 
         _factory = new WebApiFactory(connectionString);
+
+        using var scope = _factory.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<SCMDbContext>();
+        await db.Database.EnsureCreatedAsync();
+
         ScopeFactory = _factory.Services.GetRequiredService<IServiceScopeFactory>();
         DbResetter = await DatabaseResetter.CreateAsync(connectionString);
     }
@@ -49,7 +33,7 @@ public class FunctionalTestSetup
     public async Task OneTimeTearDown()
     {
         if (DbResetter is not null) await DbResetter.DisposeAsync();
-        if (_app is not null) await _app.DisposeAsync();
         if (_factory is not null) await _factory.DisposeAsync();
+        if (_dbPath is not null && File.Exists(_dbPath)) File.Delete(_dbPath);
     }
 }

@@ -14,22 +14,41 @@ const toast = useToast()
 const showDialog = ref(false)
 const editMode = ref(false)
 const form = ref({ id: 0, name: '', abbreviation: '' })
+const errors = ref({ name: '', abbreviation: '' })
 
 onMounted(() => store.fetchAll())
+
+function resetForm() {
+  errors.value = { name: '', abbreviation: '' }
+}
 
 function openCreate() {
   form.value = { id: 0, name: '', abbreviation: '' }
   editMode.value = false
+  resetForm()
   showDialog.value = true
 }
 
 function openEdit(row: { id: number; name: string; abbreviation?: string }) {
   form.value = { id: row.id, name: row.name, abbreviation: row.abbreviation ?? '' }
   editMode.value = true
+  resetForm()
   showDialog.value = true
 }
 
+function validate(): boolean {
+  errors.value = { name: '', abbreviation: '' }
+  if (!form.value.name.trim())
+    errors.value.name = 'Name is required.'
+  else if (form.value.name.length > 200)
+    errors.value.name = 'Name must be 200 characters or fewer.'
+  if (form.value.abbreviation.length > 20)
+    errors.value.abbreviation = 'Abbreviation must be 20 characters or fewer.'
+  return !errors.value.name && !errors.value.abbreviation
+}
+
 async function save() {
+  if (!validate()) return
   try {
     if (editMode.value) {
       await store.update(form.value.id, form.value.name, form.value.abbreviation || undefined)
@@ -66,12 +85,14 @@ async function save() {
     <Dialog v-model:visible="showDialog" :header="editMode ? 'Edit Customer' : 'New Customer'" modal style="width: 400px">
       <div class="flex flex-col gap-3 pt-2">
         <div class="flex flex-col gap-1">
-          <label class="font-medium">Name</label>
-          <InputText v-model="form.name" placeholder="e.g. US Army" />
+          <label class="font-medium">Name <span style="color: var(--p-red-500)">*</span></label>
+          <InputText v-model="form.name" :invalid="!!errors.name" placeholder="e.g. US Army" />
+          <small v-if="errors.name" style="color: var(--p-red-500)">{{ errors.name }}</small>
         </div>
         <div class="flex flex-col gap-1">
           <label class="font-medium">Abbreviation</label>
-          <InputText v-model="form.abbreviation" placeholder="e.g. USA" />
+          <InputText v-model="form.abbreviation" :invalid="!!errors.abbreviation" placeholder="e.g. USA" />
+          <small v-if="errors.abbreviation" style="color: var(--p-red-500)">{{ errors.abbreviation }}</small>
         </div>
       </div>
       <template #footer>

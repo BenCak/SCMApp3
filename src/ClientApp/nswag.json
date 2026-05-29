@@ -2,7 +2,7 @@
   "runtime": "Net100",
   "documentGenerator": {
     "fromDocument": {
-      "url": "../wwwroot/openapi/v1.json",
+      "url": "../Web/wwwroot/openapi/v1.json",
       "output": null
     }
   },
